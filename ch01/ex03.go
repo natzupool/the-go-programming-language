@@ -7,7 +7,7 @@ import (
 )
 
 const NumArgs int    = 100
-const Arg     string = "RADIOHEAD"
+const Arg     string = "WILCO"
 
 func echo1(args []string) {
 	s, sep := "", ""
