@@ -11,6 +11,7 @@ import (
 	"time"
 	"net/http"
 	"log"
+	"strconv"
 )
 
 var palette = []color.Color{color.White, color.Black}
@@ -18,22 +19,28 @@ var palette = []color.Color{color.White, color.Black}
 const (
 	whiteIndex = 0 // first color in palette
 	blackIndex = 1 // next color in palette
+
+	URL = "localhost:8000"
 )
 
 func main() {
 	rand.Seed(time.Now().UTC().UnixNano())
 
 	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe("localhost:8000", nil))
+	log.Fatal(http.ListenAndServe(URL, nil))
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
-	lissajous(w)
+	cycles, err := strconv.Atoi(r.URL.Query().Get("cycles"))
+	if err != nil {
+		cycles = 5 // default
+	}
+	lissajous(w, cycles)
 }
 
-func lissajous(out io.Writer) {
+func lissajous(out io.Writer, cycles int) {
 	const (
-		cycles  = 5     // number of complete x oscillator revolutions
+	//	cycles  = 5     // number of complete x oscillator revolutions
 		res     = 0.001 // angular resolution
 		size    = 100   // image canvas covers [-size..+size]
 		nframes = 64    // number of animation frames
@@ -45,7 +52,7 @@ func lissajous(out io.Writer) {
 	for i := 0; i < nframes; i++ {
 		rect := image.Rect(0, 0, 2*size+1, 2*size+1)
 		img := image.NewPaletted(rect, palette)
-		for t := 0.0; t < cycles*2*math.Pi; t += res {
+		for t := 0.0; t < float64(cycles)*2*math.Pi; t += res {
 			x := math.Sin(t)
 			y := math.Sin(t*freq + phase)
 			img.SetColorIndex(size+int(x*size+0.5), size+int(y*size+0.5),
